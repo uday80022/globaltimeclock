@@ -66,12 +66,15 @@
 }
 
 .custom-time button {
+  width: 60px;
   padding: 5px 10px;
   border: none;
   border-radius: 5px;
   background-color: #4caf50;
   color: white;
   cursor: pointer;
+  align-content: center;
+  margin-left: 1%;
 }
 
 .custom-time button:hover {
@@ -86,4 +89,10 @@
   color: red;
   font-size: 14px;
   margin-top: 5px;
+}
+
+.success-message {
+  color: green;
+  font-size: 18px;
+  margin-top: 10px;
 }

@@ -13,6 +13,7 @@ function App() {
   const HongKongTime = moment.utc(indianTime).tz("Asia/Hong_Kong");
   const [customTime, setCustomTime] = useState("");
   const [Change, setChange] = useState(true);
+  const [successMessage, setSuccessMessage] = useState("");
 
   // changes the time every second with the local current indian time
   useEffect(() => {
@@ -32,7 +33,13 @@ function App() {
     const minutes = document.getElementById("mm").value;
     const seconds = document.getElementById("ss").value;
     const day = document.getElementById("A").value;
-    if (hours !== "" && minutes !== "" && seconds !== "" && day !== "") {
+    setSuccessMessage("");
+    if (
+      hours !== "" && hours.length === 2 &&
+      minutes !== "" && minutes.length === 2 &&
+      seconds !== "" && seconds.length === 2 &&
+      day !== "" && day.length === 2 
+    ) {
       const EnteredTime = hours + ":" + minutes + ":" + seconds + " " + day;
       handleIndianTimeChange(EnteredTime);
     }
@@ -41,11 +48,10 @@ function App() {
   // handleIndianTimeChange changes the ustime and hongkong time with respect to custom time entered.
   const handleIndianTimeChange = (EnteredTime) => {
     const customTime = moment(EnteredTime, "hh:mm:ss A", true);
-    setIndianTime(customTime);
-    setCustomTime(customTime);
-    setChange(false);
     if (customTime.isValid()) {
       setIndianTime(customTime);
+      setCustomTime(customTime);
+      setChange(false);
       setInputError(false);
     } else {
       setInputError(true);
@@ -54,19 +60,28 @@ function App() {
 
   // handleSubmit sends the customtime to save_custom_time path in django views.file
   const handleSubmit = () => {
-    fetch("http://127.0.0.1:8000/save_custom_time", {
+    fetch("/save_custom_time", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({ customTime: customTime.format("hh:mm:ss A") }),
     })
-      .then((response) => response.json())
+      .then((response) => {
+        if (response.ok) {
+          setSuccessMessage("Data stored successfully");
+        } else {
+          throw new Error("Failed to store data");
+        }
+      })
       // Handles errors by JSON
       .catch((error) => {
         console.error(error);
       });
   };
+  function refreshPage() {
+    window.location.reload(false);
+  }
 
   return (
     <div className="App">
@@ -134,12 +149,18 @@ function App() {
           <button type="submit" onClick={handleSubmit}>
             submit
           </button>
+          <button type="reset" onClick={refreshPage}>
+            reset
+          </button>
         </div>
         <div>
           {inputError && (
             <p className="error-message">
               Invalid time format. Please enter time in hh:mm:ss AM/PM format.
             </p>
+          )}
+          {successMessage && (
+            <p className="success-message">{successMessage}</p>
           )}
         </div>
       </div>
